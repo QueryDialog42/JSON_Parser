@@ -92,7 +92,7 @@ public class JSONFile {
         String value;
         String key;
 
-        if ((indexOfLastList = item.lastIndexOf("]")) != -1) { // find the last ] to which commas should not be splitted
+        if ((indexOfLastList = item.lastIndexOf("]")) != -1) { // find the last ] to which commas should not be split
             int indexOfMiddleComma = item.indexOf(",", indexOfLastList); //find the first, to split as key - value
 
             value = item.substring(0, indexOfMiddleComma); // the part before comma, comma not included (list)
@@ -113,10 +113,10 @@ public class JSONFile {
     }
 
     private static String[] prepareJsonToParse(String json) {
-        int firstindex = json.indexOf("{");
-        int lastindex = json.lastIndexOf("}");
+        int firstIndex = json.indexOf("{");
+        int lastIndex = json.lastIndexOf("}");
 
-        String preparedJson = json.substring(firstindex + 1, lastindex); // get rid of { } symbols and get the pattern of [key, value_key, value_key ... value]
+        String preparedJson = json.substring(firstIndex + 1, lastIndex); // get rid of { } symbols and get the pattern of [key, value_key, value_key ... value]
 
         setJsonGlobalValue(preparedJson);
 
@@ -134,7 +134,7 @@ public class JSONFile {
             switch(item.charAt(0)) {
                 case '[': i += (short) newListFounded(listValue); break;
                 case '"': listValue.add(item.replace("\"", "")); break;
-                case '{': i += (short) doJsonLogics(listValue); break; // do not work correctlys
+                case '{': i += (short) doJsonLogics(listValue); break; // do not work correctly
                 default: listValue.add(item);
             }
         }
@@ -161,11 +161,11 @@ public class JSONFile {
 
         listValue.add(newList);
 
-        return countEveryItem(newList, 0) - 1; // skip the list, - 1 is for i++ at last
+        return countEveryItem(newList) - 1; // skip the list, - 1 is for i++ at last
     }
 
     private static String newStringArray() {
-        int firstIndex = globalJsonValue.indexOf("[");
+        int firstIndex =  globalJsonValue.indexOf("[");
         int endIndex = firstIndex;
 
         int listnumber = 1;   // one list is already found above
@@ -180,19 +180,43 @@ public class JSONFile {
             }
         }
 
-        // + 1 is for include ]
+        // + 1 is for included ]
 
 
         return globalJsonValue.substring(firstIndex, endIndex + 1);
+    }
+
+    // second function for limited json
+    private static String newStringArray(String extractedJson) {
+        int firstIndex =  extractedJson.indexOf("[");
+        int endIndex = firstIndex;
+
+        int listnumber = 1;   // one list is already found above
+
+        while (listnumber != 0) {
+            endIndex++;
+            char character = extractedJson.charAt(endIndex);
+
+            switch(character) {
+                case '[': listnumber++; break;
+                case ']': listnumber--; break;
+            }
+        }
+
+        // + 1 is for included ]
+
+
+        return extractedJson.substring(firstIndex, endIndex + 1);
     }
 
     private static String delFirstAndLastChar(String str) {
         return str.trim().substring(1, str.length() - 1);
     }
 
-    private static int countEveryItem(Object arrayList, int count) {
+    private static int countEveryItem(Object arrayList) {
+        int count = 0;
         for (Object item : (ArrayList<?>)arrayList) {
-            if (item instanceof ArrayList<?>) count += countEveryItem(item, 0);
+            if (item instanceof ArrayList<?>) count += countEveryItem(item);
             else count++;
         }
         return count;
@@ -221,7 +245,7 @@ public class JSONFile {
             }
         }
 
-        String newJsonString = globalJsonValue.substring(firstIndex, endIndex + 1); // + 1 is for include }
+        String newJsonString = globalJsonValue.substring(firstIndex, endIndex + 1); // + 1 is for included }
         returns[0] = newJsonString;
 
         try {
@@ -255,23 +279,26 @@ public class JSONFile {
         String extractedJson = json.substring(onlyKeyIndex - 1);
         char character = extractedJson.split(":")[1].trim().charAt(0);
         return switch (character) {
-            case '"' -> extractJsonString(extractedJson, 1);
+            case '"' -> extractJsonString(extractedJson);
             case '[' -> extractJsonList(extractedJson);
             case '{' -> extractJsonJson(extractedJson);
             default -> extractJsonInt(extractedJson);
         };
     }
 
-    private static String extractJsonString(String extractedJson, int fromIndex) {
+    private static String extractJsonString(String extractedJson) {
+        int fromIndex = 1;
         for (short i = 0; i < 3; i++) {
             fromIndex = extractedJson.indexOf("\"", fromIndex + 1);
         }
         return "{" + extractedJson.substring(0, fromIndex + 1) + "}";
+
     }
 
     private static String extractJsonList(String extractedJson) {
-        String list = newStringArray();
-        return "{" +  extractedJson.substring(0, extractedJson.indexOf(":") + 1) + list + "}";
+        String list = newStringArray(extractedJson);
+        setJsonGlobalValue("{" +  extractedJson.substring(0, extractedJson.indexOf(":") + 1) + list + "}");
+        return globalJsonValue.toString();
     }
 
     private static String extractJsonInt(String extractedJson){
@@ -280,9 +307,11 @@ public class JSONFile {
     }
 
     private static String extractJsonJson(String extractedJson) {
-        globalJsonValue = new StringBuilder(extractedJson);
-        String json =  "{" + extractedJson.substring(0, extractedJson.indexOf(":") + 1) + newJsonFound()[0] + "}";
-        globalJsonValue = null;
-        return json;
+        try{
+            globalJsonValue = new StringBuilder(extractedJson);
+            return  "{" + extractedJson.substring(0, extractedJson.indexOf(":") + 1) + newJsonFound()[0] + "}";
+        } finally {
+            globalJsonValue = null;
+        }
     }
 }

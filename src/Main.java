@@ -3,64 +3,62 @@ import java.util.Map;
 
 public class Main {
     public static void main(String[] args) {
-        String json = "{\"Driver\": {\"Name\": \"Anderson\", \"Age\": 23, \"Job\": \"Teacher\"}, \"Car\": {\"Model\": \"Audi\", \"Years\": {\"2021\": [\"Very Old\", \"Old\", \"New\"]}}, \"Class Members ID\": [11, 5, 34, 367, [45, \"Jack\", [67, 46, 44]], 128, [13, 14, 15, 16]], \"Manager\": \"Maria\", \"Education Season\": \"Summer\", \"Education Time\": 61.12, \"Countries\": [\"Istanbul\", \"Ankara\"], \"Times\": [\"12.00\", \"18.00\"]}";
-        String json2 = "{\"Json\": [12, 13, {\"Name\": \"Mahmut\", \"Job\": \"Lawyer\"}, 17], \"Hello\"}";
+        String json = """
+                {
+                    "Customers": {
+                        "Mike": {"Age": 45, "Job": Lawyer},
+                        "Helen": {"Age": 37, "Job": Programmer},
+                        "Jack": {"Age": 25, "Job": Not Employed}
+                    },
+                    "Products": {
+                        "Models": {
+                            "Audi": {"Year": 2021, "Price": 120000},
+                            "Ford": {"Year": 2022, "Price": 345000},
+                            "Volkswagen": {"Year": [2021, 2023], "Price": {2021: 350500, 2023: 850000}}
+                        }
+                    },
+                    "Manager": Jim Sullivan,
+                    "Location": null,
+                    "Product IDs": [1291, 2637, 1584, [2323, 1828], 2936, [1283, 9101]]
+                }
+                """;
 
-        Map<String, Object> map = JSONFile.parseJSON(json);
+        // Full Json
+        Map<?, ?> map = JSONFile.parseJSON(json);
+        System.out.println(map);
 
-        // example of getting map
+        //Get Manager. Simple
+        System.out.println(map.get("Manager"));
 
-        Map<?, ?> carmap = (Map<?, ?>)map.get("Car");
-        Map<?, ?> yearsMap = (Map<?, ?>)carmap.get("Years");
-        ArrayList<?> years = (ArrayList<?>)yearsMap.get("2021");
-        System.out.println(years.get(1));
+        // Get the Customer Mike Age
+        Map<?, ?> customers = (Map<?, ?>) map.get("Customers"); // get "Customers" object and convert it to map
+        Map<?, ?> mike = (Map<?, ?>) customers.get("Mike"); // get "Mike" object and convert it to map
+        System.out.println(Integer.parseInt((String)mike.get("Age"))); // Results are always String, should be parsed to integer to be able to do arithmetic
 
+        // Get the Volkswagen's 2021 year
+        var products = (Map<?, ?>) map.get("Products");
+        var models = (Map<?, ?>) products.get("Models");
+        var volkswagen = (Map<?, ?>) models.get("Volkswagen");
+        var year = (ArrayList<?>) volkswagen.get("Year");
+        System.out.println(year.getFirst());
 
-        Map<?, ?> map1 = (Map<?, ?>)map.get("Driver");
-        System.out.println(map1.get("Age"));
-
-        // all class member ID
-
-        ArrayList<?> IDs = (ArrayList<?>)map.get("Class Members ID");
-        printAllItems(IDs);
-        System.out.println();
-
-        // example of getting only a special key's value, others will not be processed
-
-        Map<String, Object> map3 = JSONFile.parseJSON(json, "Manager");
-        System.out.println(map3.get("Manager"));
-
-        Map<String, Object> map4 = JSONFile.parseJSON(json, "Car");
-        Map<?, ?> map5 = (Map<?, ?>)map4.get("Car");
-        System.out.println(map5.get("Model"));
-
-        Map<String, Object> map6 = JSONFile.parseJSON(json, "Education Time");
-        System.out.println(map6.get("Education Time"));
-
-        int number1 = Integer.parseInt((String)IDs.get(2));
-        int number2 = Integer.parseInt((String)IDs.get(3));
-        System.out.println(number1 + number2);
-
-        ArrayList<?> list = (ArrayList<?>)map.get("Countries");
-        System.out.println(list.get(1));
-
-        ArrayList<?> list1 = (ArrayList<?>)map.get("Times");
-        System.out.println(list1.get(0));
-
-        Map<String, Object> map10 = JSONFile.parseJSON(json2);
-        ArrayList<?>innlist1 = (ArrayList<?>)map10.get("Json");
-        Map<?, ?>innmap1 = (Map<?, ?>)innlist1.get(2);
-        System.out.println(innlist1.get(2));
-        System.out.println(innmap1.get("Job"));
-    }
+        //Get the 2323 product id in one line
+        System.out.println(((ArrayList<?>)(((ArrayList<?>) map.get("Product IDs")).get(3))).getFirst());
 
 
-    public static void printAllItems(ArrayList<?> list) {
-        for (Object i : list) {
-            if (i instanceof ArrayList<?>) {
-                printAllItems((ArrayList<?>)i);
-            }
-            else System.out.print(i + " ");
-        }
+        //Limited Json. This json will contain only the value that has "Customers" key, others will not be parsed
+        Map<?, ?> map2 = JSONFile.parseJSON(json, "Customers");
+        System.out.println(map2);
+
+        // Get the Ford's infos only
+        Map<?, ?> ford = JSONFile.parseJSON(json, "Ford");
+        System.out.println(ford);
+
+        // Get the Helen's infos only
+        Map<?, ?> helen = JSONFile.parseJSON(json, "Helen");
+        System.out.println(helen);
+        // for her job
+        var heleninfos = (Map<?, ?>)helen.get("Helen");
+        System.out.println(heleninfos.get("Job"));
     }
 }
