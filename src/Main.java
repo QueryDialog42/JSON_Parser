@@ -3,22 +3,23 @@ import java.util.Map;
 
 public class Main {
     public static void main(String[] args) {
-        String json = """
+        String json = 
+                """
                 {
                     "Customers": {
                         "Mike": {"Age": 45, "Job": Lawyer},
                         "Helen": {"Age": 37, "Job": Programmer},
                         "Jack": {"Age": 25, "Job": Not Employed}
                     },
+                    "Manager": Jim Sullivan,
                     "Products": {
                         "Models": {
-                            "Audi": {"Year": 2021, "Price": 120000},
-                            "Ford": {"Year": 2022, "Price": 345000},
-                            "Volkswagen": {"Year": [2021, 2023], "Price": {2021: 350500, 2023: 850000}}
+                            "Audi": {"Year": 2021, "Price": 120000.0},
+                            "Ford": {"Year": 2022, "Price": 345000.0},
+                            "Volkswagen": {"Year": [2021, 2023], "Price": {2021: 350500.0, 2023: 850000.0}}
                         }
                     },
-                    "Manager": Jim Sullivan,
-                    "Location": null,
+                    "Location": NULL,
                     "Product IDs": [1291, 2637, 1584, [2323, 1828], 2936, [1283, 9101]]
                 }
                 """;
@@ -60,5 +61,6 @@ public class Main {
         // for her job
         var heleninfos = (Map<?, ?>)helen.get("Helen");
         System.out.println(heleninfos.get("Job"));
+
     }
 }

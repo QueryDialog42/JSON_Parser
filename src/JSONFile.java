@@ -1,6 +1,8 @@
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class JSONFile {
     static private StringBuilder globalJsonValue;
@@ -170,18 +172,17 @@ public class JSONFile {
 
         int listnumber = 1;   // one list is already found above
 
-        while (listnumber != 0) {
-            endIndex++;
-            char character = globalJsonValue.charAt(endIndex);
+        Pattern pattern = Pattern.compile("[\\[\\]]"); // looking for [ or ].
 
-            switch(character) {
-                case '[': listnumber++; break;
-                case ']': listnumber--; break;
+        while (listnumber != 0) {
+            Matcher matcher = pattern.matcher(globalJsonValue); // Search
+            endIndex = matcher.find(endIndex + 1) ? matcher.start() : -1; // Look for matching (always works)
+
+            switch(globalJsonValue.charAt(endIndex)) {
+                case '[': listnumber++; break; // new list beginning found
+                case ']': listnumber--; break; // list ended
             }
         }
-
-        // + 1 is for included ]
-
 
         return globalJsonValue.substring(firstIndex, endIndex + 1);
     }
@@ -191,20 +192,19 @@ public class JSONFile {
         int firstIndex =  extractedJson.indexOf("[");
         int endIndex = firstIndex;
 
-        int listnumber = 1;   // one list is already found above
+        int listnumber = 1;
+
+        Pattern pattern = Pattern.compile("[\\[\\]]");
 
         while (listnumber != 0) {
-            endIndex++;
-            char character = extractedJson.charAt(endIndex);
+            Matcher matcher = pattern.matcher(extractedJson);
+            endIndex = matcher.find(endIndex + 1) ? matcher.start() : -1;
 
-            switch(character) {
+            switch(extractedJson.charAt(endIndex)) {
                 case '[': listnumber++; break;
                 case ']': listnumber--; break;
             }
         }
-
-        // + 1 is for included ]
-
 
         return extractedJson.substring(firstIndex, endIndex + 1);
     }
@@ -235,11 +235,13 @@ public class JSONFile {
 
         int jsonNumber = 1;
 
-        while(jsonNumber != 0) {
-            endIndex++;
-            char character = globalJsonValue.charAt(endIndex);
+        Pattern pattern = Pattern.compile("[{}]"); // looking for { or }
 
-            switch(character) {
+        while(jsonNumber != 0) {
+            Matcher matcher = pattern.matcher(globalJsonValue);
+            endIndex = matcher.find(endIndex + 1) ? matcher.start() : -1;
+
+            switch(globalJsonValue.charAt(endIndex)) {
                 case '{': jsonNumber++; break;
                 case '}': jsonNumber--; break;
             }
