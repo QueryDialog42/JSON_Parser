@@ -14,7 +14,6 @@ public class JSONFile {
         } finally {
             globalJsonValue = null;
         }
-
     }
 
     public static Map<String, Object> parseJSON(String json, String onlykey) {
@@ -168,23 +167,23 @@ public class JSONFile {
 
     private static String newStringArray() {
         int firstIndex =  globalJsonValue.indexOf("[");
-        int endIndex = firstIndex;
+        int endIndex = firstIndex; // starting position
 
-        int listnumber = 1;   // one list is already found above
+        short listnumber = 1;   // one list is already found above
 
-        Pattern pattern = Pattern.compile("[\\[\\]]"); // looking for [ or ].
+        Pattern pattern = Pattern.compile("[\\[\\]]"); // looking for [ or ] (pattern).
+        Matcher matcher = pattern.matcher(globalJsonValue); // Search
 
-        while (listnumber != 0) {
-            Matcher matcher = pattern.matcher(globalJsonValue); // Search
-            endIndex = matcher.find(endIndex + 1) ? matcher.start() : -1; // Look for matching (always works)
-
+        // find the last index of ]
+        while (listnumber != 0 && matcher.find(endIndex + 1)) { // +1 to NOT include first character
+            endIndex = matcher.start(); // find the start index of the pattern
             switch(globalJsonValue.charAt(endIndex)) {
                 case '[': listnumber++; break; // new list beginning found
                 case ']': listnumber--; break; // list ended
             }
         }
 
-        return globalJsonValue.substring(firstIndex, endIndex + 1);
+        return globalJsonValue.substring(firstIndex, endIndex + 1); // +1 to include ]
     }
 
     // second function for limited json
@@ -192,14 +191,13 @@ public class JSONFile {
         int firstIndex =  extractedJson.indexOf("[");
         int endIndex = firstIndex;
 
-        int listnumber = 1;
+        short listnumber = 1;
 
         Pattern pattern = Pattern.compile("[\\[\\]]");
+        Matcher matcher = pattern.matcher(extractedJson);
 
-        while (listnumber != 0) {
-            Matcher matcher = pattern.matcher(extractedJson);
-            endIndex = matcher.find(endIndex + 1) ? matcher.start() : -1;
-
+        while (listnumber != 0 && matcher.find(endIndex + 1)) {
+            endIndex = matcher.start();
             switch(extractedJson.charAt(endIndex)) {
                 case '[': listnumber++; break;
                 case ']': listnumber--; break;
@@ -236,11 +234,10 @@ public class JSONFile {
         int jsonNumber = 1;
 
         Pattern pattern = Pattern.compile("[{}]"); // looking for { or }
+        Matcher matcher = pattern.matcher(globalJsonValue);
 
-        while(jsonNumber != 0) {
-            Matcher matcher = pattern.matcher(globalJsonValue);
-            endIndex = matcher.find(endIndex + 1) ? matcher.start() : -1;
-
+        while(jsonNumber != 0 && matcher.find(endIndex + 1)) {
+            endIndex = matcher.start();
             switch(globalJsonValue.charAt(endIndex)) {
                 case '{': jsonNumber++; break;
                 case '}': jsonNumber--; break;
